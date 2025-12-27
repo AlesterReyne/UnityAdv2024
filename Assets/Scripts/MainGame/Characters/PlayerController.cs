@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -6,46 +7,54 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private NavMeshAgent navMeshAgent;
     [SerializeField] private Transform[] listOfWaypoints;
-    [SerializeField] private int prIndex;
+    [SerializeField] private GameObject popUpMessage;
+    private TextMeshProUGUI _textMeshProUGUI;
 
-    private bool _isArrived = false;
+    private int _prIndex;
+    private bool _isArrived;
     private bool _isMoving;
-    private bool _canMove = false;
+    private bool _canMove;
 
 
     void Start()
     {
-        prIndex = -1;
-        if (navMeshAgent == null || listOfWaypoints == null) return;
+        _textMeshProUGUI = popUpMessage.GetComponent<TextMeshProUGUI>();
+
+        _prIndex = 0;
+        _isArrived = false;
+        _isMoving = false;
+        _canMove = false;
+
+        SetDestination(listOfWaypoints[_prIndex]);
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            ToggleMoving(true);
-            if (_isMoving && !navMeshAgent.isStopped && navMeshAgent.remainingDistance <= 0.1f) _isArrived = true;
+        MoveCycle();
+    }
 
-            if (_isArrived)
-            {
-                prIndex++;
-                if (prIndex >= listOfWaypoints.Length)
-                {
-                    prIndex = 0;
-                }
+    private void MoveCycle()
+    {
+        if (navMeshAgent == null || listOfWaypoints == null || popUpMessage == null) return;
 
-                SetDestination(listOfWaypoints[prIndex]);
-                _isArrived = false;
-            }
-        }
-        else if (Input.GetKeyUp(KeyCode.Mouse0))
+        ToggleMoving(true);
+
+        if (_isMoving && !navMeshAgent.isStopped && navMeshAgent.remainingDistance <= 0.1f) _isArrived = true;
+
+        if (_isArrived)
         {
-            if (!(_isMoving && !navMeshAgent.isStopped && navMeshAgent.remainingDistance <= 0.1f))
+            _prIndex++;
+            if (_prIndex >= listOfWaypoints.Length)
             {
-                prIndex--;
+                _prIndex = 0;
             }
+
+            //SetDestination(listOfWaypoints[_prIndex]);
+            _isArrived = false;
 
             ToggleMoving(false);
+            _textMeshProUGUI.text = this.gameObject.name;
+            popUpMessage.SetActive(true);
         }
     }
 
